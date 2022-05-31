@@ -1,0 +1,8 @@
+runs: "sims.dat"
+optimization:
+  CA_min: 1e-4
+  CA_max: 1e-11
+  nC : 10
+run:
+  n_seeds: 30
+root_dir: meshed
