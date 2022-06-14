@@ -1,7 +1,7 @@
 print("create")
 
 import scipy
-from pimc import singleComponentCanonical,inputFileTools
+from pimc import singleComponentCanonical,inputFileTools,twoComponentSemiCanonical
 import pandas as pd
 import numpy as np
 import os
@@ -12,8 +12,13 @@ if (data.shape[0] != 1) :
     raise RuntimeError("Should only be one row in the dataframe")
 
 
-j=singleComponentCanonical.generateInputFiles(data)[0]
-label=singleComponentCanonical.generateLabels(data)[0]
+creatorModule=singleComponentCanonical
+if snakemake.config["ensamble"]=="semiCanonical":
+    creatorModule=twoComponentSemiCanonical
+
+
+j=creatorModule.generateInputFiles(data)[0]
+label=creatorModule.generateLabels(data)[0]
 
 settings=[ {"folder" : snakemake.wildcards.folder , "jSon" : [ ["input.json", j  ] ] } ]    
 folders=[ os.path.abspath(setting["folder"]) for setting in settings  ]

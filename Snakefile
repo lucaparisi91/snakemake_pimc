@@ -2,6 +2,7 @@ import glob
 configfile: "config.yaml"
 localrules: create_opt_folders,extract_Z,plan_optimized,create_folder,collect_optimization_ratio,collect_optimization_parameters,collect_runs_observable,create_folder,create_run_folders
 
+
 checkpoint create_opt_folders:
     input:
         ["sims.dat"]
@@ -25,7 +26,7 @@ checkpoint create_run_folders:
     script:
         "scripts/create_run_folders.py"
 
-checkpoint create_folder:
+rule create_folder:
     input:
         [ "{folder}/parameters.dat" ]
     output:
@@ -44,22 +45,25 @@ rule run_opt_folder:
     wildcard_constraints:
         folder=expand("{root_dir}/opt/.*",root_dir=config["root_dir"])[0]
     resources:
-        time="00-01:00:00"
+        time="00-01:00:00",name=expand("opt-{name}",name=config["name"])[0]
+    retries: 3
+
     shell:
-        "cd {wildcards.folder};module load Boost;rm -f *.hdf5;module load HDF5;rm -f energy.dat;rm -f eV.dat;~/qmc/build-3D/pimc/pimc input.json >  pimc.out"
-    
+        "cd {wildcards.folder};module load Boost;rm -f *.hdf5;module load HDF5;rm -f energy.dat;rm -f eV.dat;~/qmc/build-3D/pimc/pimc input.json >  pimc.out"    
+
 
 rule run_run_folder:
     input:
         "{folder}/input.json"
     output:
-        ["{folder}/ratio.dat","{folder}/energy.dat","{folder}/eV.dat"]
+        ["{folder}/ratio.dat","{folder}/energy.dat","{folder}/eV.dat","{folder}/M.dat"]
     wildcard_constraints:
         folder=expand("{root_dir}/run/.*", root_dir=config["root_dir"] )[0]
     resources:
-        time="02-00:00:00"
+        time="02-00:00:00",name=expand("run-{name}",name=config["name"])[0]
+    retries: 3
     shell:
-        "cd {wildcards.folder};module load Boost;rm -f *.hdf5;module load HDF5;rm -f energy.dat;rm -f eV.dat;~/qmc/build-3D/pimc/pimc input.json >  pimc.out"
+        "cd {wildcards.folder};module load Boost;rm -f *.hdf5;module load HDF5;rm -f energy.dat;rm -f eV.dat;rm -f M.dat;~/qmc/build-3D/pimc/pimc input.json >  pimc.out"
 
 
 def getFiles(folder,name):
@@ -68,7 +72,6 @@ def getFiles(folder,name):
         if not folder_dir.startswith('.') and os.path.isdir(os.path.join(folder,folder_dir)):
                     files.append(os.path.join(folder,folder_dir,name))
     return (files)
-
 
 
 rule collect_optimization_ratio:
@@ -80,6 +83,7 @@ rule collect_optimization_ratio:
     script:
         "scripts/gather.py"
 
+
 rule collect_optimization_parameters:
     input:
         lambda wildcards: getFiles("{}/opt/{}".format(config["root_dir"],wildcards.folder),"parameters.dat")
@@ -89,15 +93,14 @@ rule collect_optimization_parameters:
         merge_parameters=False
     script:
         "scripts/gather.py"
-  
 
 rule extract_Z:
     input: 
         "{folder}/collect_ratio.dat"
     output:
-        "{folder}/Z.dat"
+        ["{folder}/Z.dat","{folder}/Z_extrap.dat"]
     script:
-        "scripts/optimization-single-component.R"
+        "scripts/optimization-twoComponent.R"
 
 
 rule plan_optimized:

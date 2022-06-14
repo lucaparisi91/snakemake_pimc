@@ -3,11 +3,14 @@ cluster:
     --cpus-per-task=1
     --time={resources.time}
     --partition=defq
-    -J pimc
+    -J {resources.name}
     --parsable
+    --output={wildcards.folder}/out.log
 cluster-cancel:
   scancel
 jobs: 200
 latency-wait: 10
 local-cores: 1
 cluster-status: /mnt/nfs/home/nlp102/data/test_snakemake/scripts/status.py
+retries: 5
+keep-incomplete: True

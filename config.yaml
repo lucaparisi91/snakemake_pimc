@@ -1,8 +1,11 @@
+name: "windows"
 runs: "sims.dat"
+ensamble: "semiCanonical"
+
 optimization:
   CA_min: 1e-4
   CA_max: 1e-11
-  nC : 10
+  nC : 10p
 run:
   n_seeds: 30
-root_dir: meshed
+root_dir: /mnt/storage/nobackup/nlp102/semiCanonical/windowsT0.9

@@ -41,9 +41,8 @@ NOC_data <- NOC_data %>% addErrorLimits(average="ZA_mean",error="ZA_error")
 #%>% addErrorLimits("ZAB_mean","ZAB_error") %>%addErrorLimits(average="ZB_mean",error="ZB_error")
 Z <- NOC_data %>% stripMeanNames()
 plot <- ggplot( data=Z,aes(x=CA,y=.data[["ZA"]] ) )+ geom_point( aes_string(y="ZA")  ) + geom_errorbar(aes(ymin=ZA_lwr,ymax=ZA_upr)) + geom_smooth(method="lm" )
-ggsave("Z.pdf",plot)
+#ggsave("Z.pdf",plot)
 Z <- Z %>% ungroup() %>%summarise( ZA_error=sqrt(var(ZA)/length(ZA)),ZA=mean(ZA) )
-
 
 
 write_delim(Z,snakemake@output[[1]],delim="\t")
